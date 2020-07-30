@@ -76,7 +76,6 @@
             <groupId>com.agileframework</groupId>
             <artifactId>spring-util</artifactId>
             <version>LATEST</version>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.agileframework</groupId>
