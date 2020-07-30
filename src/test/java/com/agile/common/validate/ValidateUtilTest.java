@@ -7,11 +7,13 @@ import junit.framework.TestCase;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.validation.constraints.Pattern;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,15 +21,6 @@ import java.util.Optional;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = App.class)
 public class ValidateUtilTest extends TestCase {
-
-    @Validate(value = "a", validateType = ValidateType.EMAIL)
-    @Validate(value = "a", validateRegex = "[\\d]+",validateMsg = "必须是数字")
-    @Validate(value = "o.a.a", nullable = false, validateMsgKey = "messageKey", validateMsgParams = "cu")
-    @Validate(value = "list.a.c", nullable = false, validateMsg = "自定义错误")
-    public void tudou() {
-
-    }
-
     @Test
     public void testHandleInParamValidate() throws NoSuchMethodException {
         List<ValidateMsg> a = ValidateUtil.handleInParamValidate(ValidateUtilTest.class.getMethod("tudou"), param);
@@ -35,11 +28,22 @@ public class ValidateUtilTest extends TestCase {
         b.ifPresent(validateMsgs -> System.out.println(JSON.toJSONString(validateMsgs, true)));
     }
 
+    @Validate(value = "a", validateType = ValidateType.EMAIL)
+    @Validate(value = "a", validateRegex = "[\\d]+",validateMsg = "必须是数字")
+    @Validate(value = "o.a.a", nullable = false, validateMsgKey = "messageKey", validateMsgParams = "cu")
+    @Validate(value = "list.a.c", nullable = false, validateMsg = "自定义错误")
+    @Validate(value = "o", beanClass = Ob.class, validateGroups = {Group1.class})
+    public void tudou() {
+
+    }
+
     @NoArgsConstructor
     @AllArgsConstructor
     @Data
     public static class Ob {
+        @Length(min = 1, max = 3)
         private String a = "a";
+        @Pattern(regexp = "[\\d]+",message = "错了吧",groups = Group1.class)
         private String b = "b";
         private Ob o;
         private List<Ob> list;
@@ -58,4 +62,6 @@ public class ValidateUtilTest extends TestCase {
             add(new Ob("list/a4", "list/b4", null, null));
         }});
     }
+
+    public static interface Group1{}
 }

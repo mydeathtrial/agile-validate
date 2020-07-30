@@ -103,7 +103,7 @@ public enum ValidateType implements ValidateInterface {
         }
 
         int size = value.size();
-        if (!(validate.min_size() <= size && size <= validate.max_size())) {
+        if (!(validate.minSize() <= size && size <= validate.maxSize())) {
             ValidateMsg v = new ValidateMsg(createMessage(validate, "长度超出阈值"), false, key, value);
             list.add(v);
         }
@@ -192,7 +192,7 @@ public enum ValidateType implements ValidateInterface {
             }
 
             int size = String.valueOf(value).length();
-            if (!(validate.min_size() <= size && size <= validate.max_size())) {
+            if (!(validate.minSize() <= size && size <= validate.maxSize())) {
                 v.setState(false);
                 v.setMessage(createMessage(validate, "长度超出阈值"));
             }

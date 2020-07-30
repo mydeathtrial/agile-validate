@@ -31,7 +31,8 @@ public class ValidateUtil {
     /**
      * 入参验证
      *
-     * @param method  方法
+     * @param method 方法
+     * @param params 参数集
      * @return 验证信息集
      */
     public static List<ValidateMsg> handleInParamValidate(Method method,Object params) {
