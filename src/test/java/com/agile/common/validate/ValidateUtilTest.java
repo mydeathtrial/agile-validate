@@ -1,8 +1,12 @@
 package com.agile.common.validate;
 
+import cloud.agileframework.validate.ValidateMsg;
+import cloud.agileframework.validate.ValidateType;
+import cloud.agileframework.validate.ValidateUtil;
+import cloud.agileframework.validate.annotation.Validate;
 import com.agile.App;
-import com.agile.common.annotation.Validate;
 import com.alibaba.fastjson.JSON;
+import jakarta.validation.constraints.Pattern;
 import junit.framework.TestCase;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,7 +17,6 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.validation.constraints.Pattern;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -29,7 +32,7 @@ public class ValidateUtilTest extends TestCase {
     }
 
     @Validate(value = "a", validateType = ValidateType.EMAIL)
-    @Validate(value = "a", validateRegex = "[\\d]+",validateMsg = "必须是数字")
+    @Validate(value = "a", validateRegex = "[\\d]+", validateMsg = "必须是数字")
     @Validate(value = "o.a.a", nullable = false, validateMsgKey = "messageKey", validateMsgParams = "cu")
     @Validate(value = "list.a.c", nullable = false, validateMsg = "自定义错误")
     @Validate(value = "o", beanClass = Ob.class, validateGroups = {Group1.class})
@@ -43,7 +46,7 @@ public class ValidateUtilTest extends TestCase {
     public static class Ob {
         @Length(min = 1, max = 3)
         private String a = "a";
-        @Pattern(regexp = "[\\d]+",message = "错了吧",groups = Group1.class)
+        @Pattern(regexp = "[\\d]+", message = "错了吧", groups = Group1.class)
         private String b = "b";
         private Ob o;
         private List<Ob> list;
@@ -63,5 +66,6 @@ public class ValidateUtilTest extends TestCase {
         }});
     }
 
-    public static interface Group1{}
+    public static interface Group1 {
+    }
 }

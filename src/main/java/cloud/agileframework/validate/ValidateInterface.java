@@ -1,6 +1,6 @@
-package com.agile.common.validate;
+package cloud.agileframework.validate;
 
-import com.agile.common.annotation.Validate;
+import cloud.agileframework.validate.annotation.Validate;
 
 import java.util.List;
 

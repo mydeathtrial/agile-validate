@@ -1,4 +1,4 @@
-package com.agile.common.validate;
+package cloud.agileframework.validate;
 
 import lombok.Data;
 

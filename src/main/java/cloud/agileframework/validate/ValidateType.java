@@ -1,19 +1,19 @@
-package com.agile.common.validate;
+package cloud.agileframework.validate;
 
-import com.agile.common.annotation.Validate;
-import com.agile.common.util.clazz.TypeReference;
-import com.agile.common.util.object.ObjectUtil;
-import com.agile.common.util.pattern.PatternUtil;
-import com.agile.common.util.spring.MessageUtil;
+import cloud.agileframework.common.util.clazz.TypeReference;
+import cloud.agileframework.common.util.object.ObjectUtil;
+import cloud.agileframework.common.util.pattern.PatternUtil;
+import cloud.agileframework.spring.util.spring.MessageUtil;
+import cloud.agileframework.validate.annotation.Validate;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
+import jakarta.validation.constraints.NotNull;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;

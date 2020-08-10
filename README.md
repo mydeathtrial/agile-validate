@@ -1,9 +1,42 @@
-# agile-validate（参数验证组件）
+# agile-validate ： 参数验证器
+[![hibernate-validator](https://img.shields.io/badge/hibernate--validator-LATEST-green)](https://img.shields.io/badge/hibernate--validator-LATEST-green)
+[![maven](https://img.shields.io/badge/build-maven-green)](https://img.shields.io/badge/build-maven-green)
+## 它有什么作用
 
-简介：负责解析com.agile.common.annotation.Validate注解，实现方法参数验证，支持自定义正则表达式验证、深层参数验证、数组类型参数验证、自定义错误消息、支持spring国际化、支持hibernate-validate方式pojo验证、支持group场景
+* **注解形式声明方法入参验证**
 
-##使用方法：
-注解：用于要进行参数验证的方法，声明参数验证规则
+* **POJO类型参数验证**
+
+* **基本类型参数验证**
+
+* **自定义验证规则**
+
+* **支持验证场景**
+
+* **集合类型参数验证**
+
+* **自定义错误消息与国际化消息**
+-------
+## 快速入门
+开始你的第一个项目是非常容易的。
+
+#### 步骤 1: 下载包
+您可以从[最新稳定版本]下载包(https://github.com/mydeathtrial/agile-validate/releases).
+该包已上传至maven中央仓库，可在pom中直接声明引用
+
+以版本agile-validate-0.1.jar为例。
+#### 步骤 2: 添加maven依赖
+```xml
+<dependency>
+    <groupId>cloud.agileframework</groupId>
+    <artifactId>agile-validate</artifactId>
+    <version>0.1</version>
+</dependency>
+```
+#### 步骤 3: 开箱即用
+
+##### 注解
+用于要进行参数验证的方法，声明参数验证规则
 ```
 1、com.agile.common.annotation.Validate，支持多注解
 2、com.agile.common.annotation.Validates，可包含多Validate
@@ -19,7 +52,8 @@
         ...
     }
 ```
-调用：获取验证结果，工具类com.agile.common.validate.ValidateUtil
+##### 调用
+获取验证结果，工具类cloud.agileframework.validate.ValidateUtil
 ```
     /**
      * 方法入参验证
@@ -115,7 +149,7 @@ public @interface Validate {
 }
 ```
 
-##验证结果（例）
+验证结果（例）
 ```
 [
 	{

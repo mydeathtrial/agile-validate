@@ -1,10 +1,8 @@
-package com.agile.common.validate;
+package cloud.agileframework.validate;
 
-import com.agile.common.annotation.Validate;
-import com.agile.common.annotation.Validates;
-import com.agile.common.util.json.JSONUtil;
-import com.agile.common.util.object.ObjectUtil;
-import com.agile.common.util.string.StringUtil;
+import cloud.agileframework.common.util.json.JSONUtil;
+import cloud.agileframework.validate.annotation.Validate;
+import cloud.agileframework.validate.annotation.Validates;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
@@ -35,7 +33,7 @@ public class ValidateUtil {
      * @param params 参数集
      * @return 验证信息集
      */
-    public static List<ValidateMsg> handleInParamValidate(Method method,Object params) {
+    public static List<ValidateMsg> handleInParamValidate(Method method, Object params) {
         Optional<Validates> validatesOptional = Optional.ofNullable(method.getAnnotation(Validates.class));
         Optional<Validate> validateOptional = Optional.ofNullable(method.getAnnotation(Validate.class));
 
@@ -43,7 +41,7 @@ public class ValidateUtil {
         validatesOptional.ifPresent(validates -> validateList.addAll(Stream.of(validates.value()).collect(Collectors.toList())));
         validateOptional.ifPresent(validateList::add);
 
-        return validateList.stream().map(validate -> handleValidateAnnotation(validate,params)).reduce((all, validateMsgList) -> {
+        return validateList.stream().map(validate -> handleValidateAnnotation(validate, params)).reduce((all, validateMsgList) -> {
             all.addAll(validateMsgList);
             return all;
         }).orElse(Lists.newArrayList());
@@ -55,7 +53,7 @@ public class ValidateUtil {
      * @param v Validate注解
      * @return 验证信息集
      */
-    private static List<ValidateMsg> handleValidateAnnotation(Validate v,Object params) {
+    private static List<ValidateMsg> handleValidateAnnotation(Validate v, Object params) {
         List<ValidateMsg> list = new ArrayList<>();
 
         if (v == null) {
@@ -67,7 +65,7 @@ public class ValidateUtil {
         if (StringUtils.isBlank(key)) {
             value = params;
         } else {
-            value = JSONUtil.pathGet(key,params);
+            value = JSONUtil.pathGet(key, params);
         }
 
         ValidateType validateType = v.validateType();

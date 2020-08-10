@@ -1,6 +1,6 @@
-package com.agile.common.annotation;
+package cloud.agileframework.validate.annotation;
 
-import com.agile.common.validate.ValidateType;
+import cloud.agileframework.validate.ValidateType;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
