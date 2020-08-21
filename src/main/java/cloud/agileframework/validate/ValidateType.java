@@ -1,8 +1,10 @@
 package cloud.agileframework.validate;
 
+import cloud.agileframework.common.util.clazz.ClassUtil;
 import cloud.agileframework.common.util.clazz.TypeReference;
 import cloud.agileframework.common.util.object.ObjectUtil;
 import cloud.agileframework.common.util.pattern.PatternUtil;
+import cloud.agileframework.spring.util.spring.BeanUtil;
 import cloud.agileframework.spring.util.spring.MessageUtil;
 import cloud.agileframework.validate.annotation.Validate;
 import jakarta.validation.ConstraintViolation;
@@ -15,8 +17,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author 佟盟 on 2018/11/16
@@ -117,7 +122,7 @@ public enum ValidateType implements ValidateInterface {
         } else if (!StringUtils.isBlank(validate.validateMsg())) {
             result = validate.validateMsg();
         } else if (!StringUtils.isBlank(validate.validateMsgKey())) {
-            result = MessageUtil.message(validate.validateMsgKey(), validate.validateMsgParams());
+            result = MessageUtil.message(validate.validateMsgKey(), (Object[]) validate.validateMsgParams());
         } else {
             result = defaultMessage;
         }
@@ -201,6 +206,19 @@ public enum ValidateType implements ValidateInterface {
                 v.setState(false);
                 v.setMessage(createMessage(validate, "不允许为空值"));
             }
+        }
+        if (validate.customBusiness().length > 0) {
+            Set<ValidateMsg> set = Arrays.stream(validate.customBusiness()).map(custom -> {
+                ValidateCustomBusiness bean = BeanUtil.getBean(custom);
+                if (bean == null) {
+                    bean = ClassUtil.newInstance(custom);
+                }
+                if (bean == null) {
+                    return new ArrayList<ValidateMsg>(0);
+                }
+                return bean.validate(value);
+            }).flatMap(Collection::stream).collect(Collectors.toSet());
+            list.addAll(set);
         }
         return list;
     }

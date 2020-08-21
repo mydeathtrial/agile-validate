@@ -1,5 +1,6 @@
 package cloud.agileframework.validate.annotation;
 
+import cloud.agileframework.validate.ValidateCustomBusiness;
 import cloud.agileframework.validate.ValidateType;
 
 import java.lang.annotation.Documented;
@@ -88,4 +89,9 @@ public @interface Validate {
      * 最小值
      */
     int minSize() default -1;
+
+    /**
+     * 自定义验证过程
+     */
+    Class<? extends ValidateCustomBusiness>[] customBusiness() default {};
 }

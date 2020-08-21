@@ -5,6 +5,10 @@ import cloud.agileframework.validate.annotation.Validate;
 import cloud.agileframework.validate.annotation.Validates;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Method;
@@ -12,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -101,5 +106,26 @@ public class ValidateUtil {
             return Optional.of(new ArrayList<>(cache.values()));
         }
         return Optional.empty();
+    }
+
+    /**
+     * 验证POJO对象
+     * @param pojo 要验证的对象
+     * @param groups 验证场景，需要是接口
+     * @return 验证结果
+     */
+    public static List<ValidateMsg> validate(Class<?> pojo, Class<?>... groups) {
+        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+        Validator validator = validatorFactory.getValidator();
+        Set<ConstraintViolation<Object>> set = validator.validate(pojo, groups);
+        List<ValidateMsg> list = new ArrayList<>();
+        if (set == null || set.isEmpty()) {
+            return list;
+        }
+        for (ConstraintViolation<Object> m : set) {
+            ValidateMsg r = new ValidateMsg(m.getMessage(), false, m.getPropertyPath().toString(), m.getInvalidValue());
+            list.add(r);
+        }
+        return list;
     }
 }

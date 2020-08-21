@@ -16,6 +16,8 @@
 * **集合类型参数验证**
 
 * **自定义错误消息与国际化消息**
+
+* **自定义业务验证**
 -------
 ## 快速入门
 开始你的第一个项目是非常容易的。
@@ -48,6 +50,7 @@
     @Validate(value = "param2", nullable = false, validateMsgKey = "messageKey", validateMsgParams = "cu")
     @Validate(value = "params.param1.param2", nullable = false, validateMsg = "自定义错误")
     @Validate(value = "param3", beanClass = Ob.class, validateGroups = {Group1.class})
+    @Validate(value = "a",customBusiness = {CustomValidate.class})
     public void yourMethod() {
         ...
     }
@@ -146,6 +149,11 @@ public @interface Validate {
      * 最小值
      */
     int minSize() default -1;
+
+    /**
+     * 自定义业务验证过程
+     */
+    Class<? extends ValidateCustomBusiness>[] customBusiness() default {};
 }
 ```
 
@@ -176,4 +184,30 @@ public @interface Validate {
 	}
 ]
 
+```
+
+##### 自定义业务代码验证
+```java
+    //使用注解中的customBusiness属性，声明要使用的业务验证类，业务验证类必须实现ValidateCustomBusiness接口
+    //该属性支持声明多个业务验证类，验证组件调用业务验证类的validate方法时，会有限尝试使用spring托管的bean去调用
+    //当bean不存在时将自动创建业务验证类对象调用。所以业务验证类中支持使用任何spring的所有功能。
+    @Validate(value = "paramKey",customBusiness = {CustomValidate.class})
+    public void yourMethod() {
+
+    }
+
+    public class CustomValidate implements ValidateCustomBusiness {
+    
+    
+        @Override
+        public List<ValidateMsg> validate(Object params) {
+            ...
+            ValidateMsg validateMsg = new ValidateMsg();
+            validateMsg.setItem("paramKey");
+            validateMsg.setItemValue(params);
+            validateMsg.setMessage("业务验证出错了");
+            validateMsg.setState(false);
+            return Collections.singletonList(validateMsg);
+        }
+    }
 ```

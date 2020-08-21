@@ -36,6 +36,7 @@ public class ValidateUtilTest extends TestCase {
     @Validate(value = "o.a.a", nullable = false, validateMsgKey = "messageKey", validateMsgParams = "cu")
     @Validate(value = "list.a.c", nullable = false, validateMsg = "自定义错误")
     @Validate(value = "o", beanClass = Ob.class, validateGroups = {Group1.class})
+    @Validate(value = "a",customBusiness = {CustomValidate.class})
     public void tudou() {
 
     }

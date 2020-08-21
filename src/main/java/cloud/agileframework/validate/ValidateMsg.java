@@ -24,6 +24,9 @@ public class ValidateMsg {
         this.itemValue = paramValue;
     }
 
+    public ValidateMsg() {
+    }
+
     public boolean isState() {
         return state;
     }
