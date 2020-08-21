@@ -44,7 +44,7 @@
 2、com.agile.common.annotation.Validates，可包含多Validate
 ```
 例子：
-```
+```java
     @Validate(value = "param1", validateType = ValidateType.EMAIL)
     @Validate(value = "param1", validateRegex = "[\\d]+",validateMsg = "必须是数字")
     @Validate(value = "param2", nullable = false, validateMsgKey = "messageKey", validateMsgParams = "cu")
@@ -57,7 +57,7 @@
 ```
 ##### 调用
 获取验证结果，工具类cloud.agileframework.validate.ValidateUtil
-```
+```java
     /**
      * 方法入参验证
      *
@@ -76,7 +76,7 @@
     public static Optional<List<ValidateMsg>> aggregation(List<ValidateMsg> list) 
 ```
 注解参数说明：
-```
+```java
 public @interface Validate {
     /**
      * 参数名
@@ -158,7 +158,7 @@ public @interface Validate {
 ```
 
 验证结果（例）
-```
+```json
 [
 	{
 		"item":"param1",
