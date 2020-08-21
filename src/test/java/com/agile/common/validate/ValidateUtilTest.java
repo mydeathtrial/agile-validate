@@ -27,8 +27,7 @@ public class ValidateUtilTest extends TestCase {
     @Test
     public void testHandleInParamValidate() throws NoSuchMethodException {
         List<ValidateMsg> a = ValidateUtil.handleInParamValidate(ValidateUtilTest.class.getMethod("tudou"), param);
-        Optional<List<ValidateMsg>> b = ValidateUtil.aggregation(a);
-        b.ifPresent(validateMsgs -> System.out.println(JSON.toJSONString(validateMsgs, true)));
+        System.out.println(JSON.toJSONString(ValidateUtil.aggregation(a), true));
     }
 
     @Validate(value = "a", validateType = ValidateType.EMAIL)

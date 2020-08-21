@@ -51,9 +51,15 @@
     @Validate(value = "params.param1.param2", nullable = false, validateMsg = "自定义错误")
     @Validate(value = "param3", beanClass = Ob.class, validateGroups = {Group1.class})
     @Validate(value = "a",customBusiness = {CustomValidate.class})
-    public void yourMethod() {
+    public void yourMethod(...) {
         ...
     }
+
+    //获取参数校验结果
+    List<ValidateMsg> result = ValidateUtil.handleInParamValidate(getMethod("yourMethod"), param);
+
+    //验证结果聚合，同一个参数如果经过多个验证环节，可能产生多种错误，该方法可将同参数验证结果进行聚合
+    List<ValidateMsg> result = ValidateUtil.aggregation(result);
 ```
 ##### 调用
 获取验证结果，工具类cloud.agileframework.validate.ValidateUtil
@@ -73,7 +79,7 @@
      * @param list 聚合之前的错误信息
      * @return 聚合后的信息，过滤掉正确参数，重复的参数验证结果合并为一个，对应的错误消息合并
      */
-    public static Optional<List<ValidateMsg>> aggregation(List<ValidateMsg> list) 
+    public static List<ValidateMsg> aggregation(List<ValidateMsg> list) 
 ```
 注解参数说明：
 ```java
@@ -188,20 +194,21 @@ public @interface Validate {
 
 ##### 自定义业务代码验证
 ```java
-    //使用注解中的customBusiness属性，声明要使用的业务验证类，业务验证类必须实现ValidateCustomBusiness接口
-    //该属性支持声明多个业务验证类，验证组件调用业务验证类的validate方法时，会有限尝试使用spring托管的bean去调用
-    //当bean不存在时将自动创建业务验证类对象调用。所以业务验证类中支持使用任何spring的所有功能。
+    //使用注解中的customBusiness属性，声明要使用的"业务验证类"，"业务验证类"必须实现ValidateCustomBusiness接口
+    //该属性支持声明多个"业务验证类"，验证组件调用"业务验证类"的validate方法时，会有限尝试使用spring托管的bean去调用
+    //当bean不存在时将自动创建"业务验证类"对象调用。所以"业务验证类"中支持使用任何spring的所有功能。
     @Validate(value = "paramKey",customBusiness = {CustomValidate.class})
     public void yourMethod() {
 
     }
 
+    //自己定义的"业务验证类"
     public class CustomValidate implements ValidateCustomBusiness {
     
     
         @Override
         public List<ValidateMsg> validate(Object params) {
-            ...
+            //自定义的参数验证环节，举例...
             ValidateMsg validateMsg = new ValidateMsg();
             validateMsg.setItem("paramKey");
             validateMsg.setItemValue(params);

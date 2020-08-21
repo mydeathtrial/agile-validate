@@ -216,7 +216,11 @@ public enum ValidateType implements ValidateInterface {
                 if (bean == null) {
                     return new ArrayList<ValidateMsg>(0);
                 }
-                return bean.validate(value);
+                List<ValidateMsg> vr = bean.validate(value);
+                if (vr == null) {
+                    return new ArrayList<ValidateMsg>(0);
+                }
+                return vr;
             }).flatMap(Collection::stream).collect(Collectors.toSet());
             list.addAll(set);
         }

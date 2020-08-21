@@ -88,7 +88,7 @@ public class ValidateUtil {
      * @param list 聚合之前的错误信息
      * @return 聚合后的信息
      */
-    public static Optional<List<ValidateMsg>> aggregation(List<ValidateMsg> list) {
+    public static List<ValidateMsg> aggregation(List<ValidateMsg> list) {
 
         List<ValidateMsg> errors = list.parallelStream().filter(validateMsg -> !validateMsg.isState()).collect(Collectors.toList());
 
@@ -103,9 +103,9 @@ public class ValidateUtil {
             }
         });
         if (cache.size() > 0) {
-            return Optional.of(new ArrayList<>(cache.values()));
+            return new ArrayList<>(cache.values());
         }
-        return Optional.empty();
+        return new ArrayList<>(0);
     }
 
     /**
