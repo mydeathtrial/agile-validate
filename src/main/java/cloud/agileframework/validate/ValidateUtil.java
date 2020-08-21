@@ -114,7 +114,7 @@ public class ValidateUtil {
      * @param groups 验证场景，需要是接口
      * @return 验证结果
      */
-    public static List<ValidateMsg> validate(Class<?> pojo, Class<?>... groups) {
+    public static List<ValidateMsg> validate(Object pojo, Class<?>... groups) {
         ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
         Validator validator = validatorFactory.getValidator();
         Set<ConstraintViolation<Object>> set = validator.validate(pojo, groups);
