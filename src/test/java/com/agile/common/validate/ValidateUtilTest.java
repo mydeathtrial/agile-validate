@@ -6,7 +6,6 @@ import cloud.agileframework.validate.ValidateUtil;
 import cloud.agileframework.validate.annotation.Validate;
 import com.agile.App;
 import com.alibaba.fastjson.JSON;
-import jakarta.validation.constraints.Pattern;
 import junit.framework.TestCase;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,6 +16,7 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.validation.constraints.Pattern;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

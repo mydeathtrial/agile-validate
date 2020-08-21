@@ -5,12 +5,12 @@ import cloud.agileframework.validate.annotation.Validate;
 import cloud.agileframework.validate.annotation.Validates;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
