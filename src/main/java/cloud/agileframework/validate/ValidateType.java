@@ -157,7 +157,7 @@ public enum ValidateType implements ValidateInterface {
         ValidateMsg v = new ValidateMsg(key, value);
         list.add(v);
         if (value != null) {
-            boolean state;
+            boolean state = true;
             // 验证空字符串
             if (!validate.isBlank()) {
                 state = !StringUtils.isBlank(value.toString());
@@ -184,10 +184,11 @@ public enum ValidateType implements ValidateInterface {
                     }
                 }
 
-                if (validate.validateType() == NUMBER
+                final boolean needContinue = state && validate.validateType() == NUMBER
                         || validate.validateType() == FLOAT
                         || validate.validateType() == INT
-                        || validate.validateType() == DOUBLE) {
+                        || validate.validateType() == DOUBLE;
+                if (needContinue) {
                     Number n = "".equals(value) ? 0 : NumberUtils.createNumber(String.valueOf(value));
                     if (!(validate.min() <= n.doubleValue() && n.doubleValue() <= validate.max())) {
                         v.setState(false);
