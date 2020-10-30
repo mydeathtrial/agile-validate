@@ -66,9 +66,9 @@ public @interface Validate {
     boolean nullable() default true;
 
     /**
-     * 能够为空字符串，默认为可以
+     * 能够为空字符串，默认为不可以
      */
-    boolean isBlank() default true;
+    boolean isBlank() default false;
 
     /**
      * 数字类型参数的最大值
