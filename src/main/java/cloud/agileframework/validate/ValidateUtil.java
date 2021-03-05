@@ -90,11 +90,9 @@ public class ValidateUtil {
      */
     public static List<ValidateMsg> aggregation(List<ValidateMsg> list) {
 
-        List<ValidateMsg> errors = list.parallelStream().filter(validateMsg -> !validateMsg.isState()).collect(Collectors.toList());
+        Map<String, ValidateMsg> cache = Maps.newHashMapWithExpectedSize(list.size());
 
-        Map<String, ValidateMsg> cache = Maps.newHashMapWithExpectedSize(errors.size());
-
-        errors.forEach(validateMsg -> {
+        list.forEach(validateMsg -> {
             String key = validateMsg.getItem();
             if (cache.containsKey(key)) {
                 cache.get(key).addMessage(validateMsg.getMessage());
@@ -110,20 +108,26 @@ public class ValidateUtil {
 
     /**
      * 验证POJO对象
-     * @param pojo 要验证的对象
+     *
+     * @param pojo   要验证的对象
      * @param groups 验证场景，需要是接口
      * @return 验证结果
      */
     public static List<ValidateMsg> validate(Object pojo, Class<?>... groups) {
+        List<ValidateMsg> list = new ArrayList<>();
+
+        if (pojo == null) {
+            return list;
+        }
         ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
         Validator validator = validatorFactory.getValidator();
         Set<ConstraintViolation<Object>> set = validator.validate(pojo, groups);
-        List<ValidateMsg> list = new ArrayList<>();
+
         if (set == null || set.isEmpty()) {
             return list;
         }
         for (ConstraintViolation<Object> m : set) {
-            ValidateMsg r = new ValidateMsg(m.getMessage(), false, m.getPropertyPath().toString(), m.getInvalidValue());
+            ValidateMsg r = new ValidateMsg(m.getMessage(), m.getPropertyPath().toString(), m.getInvalidValue());
             list.add(r);
         }
         return list;

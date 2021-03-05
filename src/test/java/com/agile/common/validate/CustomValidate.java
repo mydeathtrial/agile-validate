@@ -20,7 +20,6 @@ public class CustomValidate implements ValidateCustomBusiness {
         validateMsg.setItem("a");
         validateMsg.setItemValue("tu");
         validateMsg.setMessage("aaaa");
-        validateMsg.setState(false);
         return Collections.singletonList(validateMsg);
     }
 }

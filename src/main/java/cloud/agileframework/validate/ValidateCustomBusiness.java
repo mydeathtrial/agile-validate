@@ -12,6 +12,7 @@ import java.util.List;
 public interface ValidateCustomBusiness {
     /**
      * 自定义验证过程
+     *
      * @param params 参数
      * @return 验证结果信息
      */

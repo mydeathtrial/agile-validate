@@ -19,7 +19,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.validation.constraints.Pattern;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = App.class)
@@ -27,6 +26,9 @@ public class ValidateUtilTest extends TestCase {
     @Test
     public void testHandleInParamValidate() throws NoSuchMethodException {
         List<ValidateMsg> a = ValidateUtil.handleInParamValidate(ValidateUtilTest.class.getMethod("tudou"), param);
+        if (a == null || a.isEmpty()) {
+            throw new RuntimeException();
+        }
         System.out.println(JSON.toJSONString(ValidateUtil.aggregation(a), true));
     }
 
@@ -35,7 +37,7 @@ public class ValidateUtilTest extends TestCase {
     @Validate(value = "o.a.a", nullable = false, validateMsgKey = "messageKey", validateMsgParams = "cu")
     @Validate(value = "list.a.c", nullable = false, validateMsg = "自定义错误")
     @Validate(value = "o", beanClass = Ob.class, validateGroups = {Group1.class})
-    @Validate(value = "a",customBusiness = {CustomValidate.class})
+    @Validate(value = "a", customBusiness = {CustomValidate.class})
     public void tudou() {
 
     }
@@ -66,6 +68,6 @@ public class ValidateUtilTest extends TestCase {
         }});
     }
 
-    public static interface Group1 {
+    public interface Group1 {
     }
 }

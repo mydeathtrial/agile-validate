@@ -110,7 +110,7 @@ public enum ValidateType implements ValidateInterface {
 
         int size = value.size();
         if (!(validate.minSize() <= size && size <= validate.maxSize())) {
-            ValidateMsg v = new ValidateMsg(createMessage(validate, "长度超出阈值"), false, key, value);
+            ValidateMsg v = new ValidateMsg(createMessage(validate, "长度超出阈值"), key, value);
             list.add(v);
         }
         return list;
@@ -123,109 +123,200 @@ public enum ValidateType implements ValidateInterface {
         } else if (!StringUtils.isBlank(validate.validateMsg())) {
             result = validate.validateMsg();
         } else if (!StringUtils.isBlank(validate.validateMsgKey())) {
-            result = MessageUtil.message(validate.validateMsgKey(), (Object[]) validate.validateMsgParams());
+            result = MessageUtil.message(validate.validateMsgKey(), null, (Object[]) validate.validateMsgParams());
         } else {
             result = defaultMessage;
         }
         return result;
     }
 
-    private String createMessage(Validate validate) {
-        return createMessage(validate, null);
-    }
-
     private List<ValidateMsg> validate(String key, Object value, Validate validate) {
         List<ValidateMsg> list = new ArrayList<>();
 
-        Class<?> beanClass = validate.beanClass();
-        if (beanClass != Class.class) {
-            Object bean = ObjectUtil.to(value, new TypeReference<>(beanClass));
-            if (bean == null) {
-                list.add(new ValidateMsg(value == null ? "参数不允许为空" : "非法参数", false, key, value));
-            } else {
-                ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
-                Validator validator = validatorFactory.getValidator();
-                Set<ConstraintViolation<Object>> set = validator.validate(bean, validate.validateGroups());
-                for (ConstraintViolation<Object> m : set) {
-                    ValidateMsg r = new ValidateMsg(m.getMessage(), false, StringUtils.isBlank(key) ? m.getPropertyPath().toString() : String.format("%s.%s", key, m.getPropertyPath()), m.getInvalidValue());
-                    list.add(r);
-                }
-            }
+        //hibernate-validate验证
+        validateBeanClass(key, value, validate, list);
 
-            return list;
+        //验证isBlank
+        validateIsBlank(key, value, validate, list);
+
+        //非空时验证正则
+        validateRegex(key, value, validate, list);
+
+        //长度验证
+        validateSize(key, value, validate, list);
+
+        //空值验证
+        validateNullable(key, value, validate, list);
+
+        //自定义业务验证
+        validateCustomBusiness(value, validate, list);
+
+        return list;
+    }
+
+    /**
+     * 验证空值
+     *
+     * @param key      参数索引
+     * @param value    值
+     * @param validate 注解
+     * @param list     异常信息容器
+     */
+    private void validateNullable(String key, Object value, Validate validate, List<ValidateMsg> list) {
+        if (value != null || validate.nullable()) {
+            return;
+        }
+        ValidateMsg v = new ValidateMsg(key, null);
+
+        v.setMessage(createMessage(validate, "不允许为空值"));
+        list.add(v);
+    }
+
+    /**
+     * 长度验证
+     *
+     * @param key      参数索引
+     * @param value    值
+     * @param validate 注解
+     * @param list     异常信息容器
+     */
+    private void validateSize(String key, Object value, Validate validate, List<ValidateMsg> list) {
+        if (value == null) {
+            return;
+        }
+        int size = String.valueOf(value).length();
+        if (validate.minSize() <= size && size <= validate.maxSize()) {
+            return;
         }
 
         ValidateMsg v = new ValidateMsg(key, value);
+
+        v.setMessage(createMessage(validate, "长度超出阈值"));
         list.add(v);
-        if (value != null) {
-            boolean state = true;
-            // 验证空字符串
-            if (!validate.isBlank()) {
-                state = !StringUtils.isBlank(value.toString());
-                if (!state) {
-                    v.setState(false);
-                    v.setMessage(createMessage(validate, "不允许为空值"));
-                }
-            }
+    }
 
-            // 非空时验证正则
-            if (!StringUtils.isBlank(value.toString())) {
-                if (validate.validateType() != NO) {
-                    state = PatternUtil.matches(regex, String.valueOf(value));
-                    if (!state) {
-                        v.setState(false);
-                        v.setMessage(createMessage(validate));
-                    }
-                }
-                if (!StringUtils.isEmpty(validate.validateRegex())) {
-                    state = PatternUtil.matches(validate.validateRegex(), String.valueOf(value));
-                    if (!state) {
-                        v.setState(false);
-                        v.setMessage(createMessage(validate));
-                    }
-                }
-
-                final boolean needContinue = state && validate.validateType() == NUMBER
-                        || validate.validateType() == FLOAT
-                        || validate.validateType() == INT
-                        || validate.validateType() == DOUBLE;
-                if (needContinue) {
-                    Number n = "".equals(value) ? 0 : NumberUtils.createNumber(String.valueOf(value));
-                    if (!(validate.min() <= n.doubleValue() && n.doubleValue() <= validate.max())) {
-                        v.setState(false);
-                        v.setMessage(createMessage(validate, "值超出阈值"));
-                    }
-                }
-            }
-
-            int size = String.valueOf(value).length();
-            if (!(validate.minSize() <= size && size <= validate.maxSize())) {
-                v.setState(false);
-                v.setMessage(createMessage(validate, "长度超出阈值"));
-            }
-        } else {
-            if (!validate.nullable()) {
-                v.setState(false);
-                v.setMessage(createMessage(validate, "不允许为空值"));
-            }
+    /**
+     * 正则验证
+     *
+     * @param key      参数索引
+     * @param value    值
+     * @param validate 注解
+     * @param list     异常信息容器
+     */
+    private void validateRegex(String key, Object value, Validate validate, List<ValidateMsg> list) {
+        if (value == null) {
+            return;
         }
-        if (validate.customBusiness().length > 0) {
-            Set<ValidateMsg> set = Arrays.stream(validate.customBusiness()).map(custom -> {
-                ValidateCustomBusiness bean = BeanUtil.getBean(custom);
-                if (bean == null) {
-                    bean = ClassUtil.newInstance(custom);
-                }
-                if (bean == null) {
+        boolean result = true;
+        final String text = String.valueOf(value);
+        if (validate.validateType() != NO && !PatternUtil.matches(regex, text)) {
+            result = false;
+        }
+        if (!StringUtils.isEmpty(validate.validateRegex()) && !PatternUtil.matches(validate.validateRegex(), text)) {
+            result = false;
+        }
+
+        if (!result) {
+            ValidateMsg v = new ValidateMsg(key, value);
+
+            v.setMessage(createMessage(validate, "格式错误"));
+            list.add(v);
+        }
+
+        final boolean needContinue = result && validate.validateType() == NUMBER
+                || validate.validateType() == FLOAT
+                || validate.validateType() == INT
+                || validate.validateType() == DOUBLE;
+        if (!needContinue) {
+            return;
+        }
+        Number n = "".equals(value) ? 0 : NumberUtils.createNumber(text);
+        if (validate.min() > n.doubleValue() || n.doubleValue() > validate.max()) {
+            ValidateMsg v = new ValidateMsg(key, value);
+
+            v.setMessage(createMessage(validate, "大小超出阈值"));
+            list.add(v);
+        }
+    }
+
+    /**
+     * 空串验证
+     *
+     * @param key      参数索引
+     * @param value    值
+     * @param validate 注解
+     * @param list     异常信息容器
+     */
+    private void validateIsBlank(String key, Object value, Validate validate, List<ValidateMsg> list) {
+        // 验证空字符串
+        if (value == null || !validate.isBlank() || !StringUtils.isBlank(value.toString())) {
+            return;
+        }
+        ValidateMsg v = new ValidateMsg(key, value);
+
+        v.setMessage(createMessage(validate, "不允许为空值"));
+        list.add(v);
+    }
+
+    /**
+     * 自定义业务方式验证
+     *
+     * @param value    值
+     * @param validate 注解
+     * @param list     异常信息容器
+     */
+    private void validateCustomBusiness(Object value, Validate validate, List<ValidateMsg> list) {
+        if (validate.customBusiness().length == 0) {
+            return;
+        }
+        Set<ValidateMsg> set = Arrays.stream(validate.customBusiness()).map(custom -> {
+            ValidateCustomBusiness bean = BeanUtil.getBean(custom);
+            if (bean == null) {
+                bean = ClassUtil.newInstance(custom);
+            }
+            if (bean == null) {
+                try {
+                    throw new InstantiationException("Class " + custom.getCanonicalName() + " cannot create an object through a constructor");
+                } catch (InstantiationException e) {
+                    e.printStackTrace();
                     return new ArrayList<ValidateMsg>(0);
                 }
-                List<ValidateMsg> vr = bean.validate(value);
-                if (vr == null) {
-                    return new ArrayList<ValidateMsg>(0);
-                }
-                return vr;
-            }).flatMap(Collection::stream).collect(Collectors.toSet());
-            list.addAll(set);
+            }
+            List<ValidateMsg> vr = bean.validate(value);
+            if (vr == null) {
+                return new ArrayList<ValidateMsg>(0);
+            }
+            return vr;
+        }).flatMap(Collection::stream).collect(Collectors.toSet());
+        list.addAll(set);
+    }
+
+    /**
+     * 验证hibernate-validate
+     *
+     * @param key      参数索引
+     * @param value    值
+     * @param validate 注解
+     * @param list     错误信息容器
+     */
+    private void validateBeanClass(String key, Object value, Validate validate, List<ValidateMsg> list) {
+        Class<?> beanClass = validate.beanClass();
+        if (value == null || beanClass == Class.class) {
+            return;
         }
-        return list;
+        Object bean = ObjectUtil.to(value, new TypeReference<>(beanClass));
+        if (bean == null) {
+            bean = ClassUtil.newInstance(beanClass);
+            ObjectUtil.setAllFieldNull(bean);
+        }
+        if (bean != null) {
+            ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+            Validator validator = validatorFactory.getValidator();
+            Set<ConstraintViolation<Object>> set = validator.validate(bean, validate.validateGroups());
+            for (ConstraintViolation<Object> m : set) {
+                ValidateMsg r = new ValidateMsg(m.getMessage(), StringUtils.isBlank(key) ? m.getPropertyPath().toString() : String.format("%s.%s", key, m.getPropertyPath()), m.getInvalidValue());
+                list.add(r);
+            }
+        }
     }
 }

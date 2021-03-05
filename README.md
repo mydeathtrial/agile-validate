@@ -1,6 +1,8 @@
 # agile-validate ： 参数验证器
+
 [![hibernate-validator](https://img.shields.io/badge/hibernate--validator-LATEST-green)](https://img.shields.io/badge/hibernate--validator-LATEST-green)
 [![maven](https://img.shields.io/badge/build-maven-green)](https://img.shields.io/badge/build-maven-green)
+
 ## 它有什么作用
 
 * **注解形式声明方法入参验证**
@@ -18,16 +20,21 @@
 * **自定义错误消息与国际化消息**
 
 * **自定义业务验证**
+
 -------
+
 ## 快速入门
+
 开始你的第一个项目是非常容易的。
 
 #### 步骤 1: 下载包
-您可以从[最新稳定版本]下载包(https://github.com/mydeathtrial/agile-validate/releases).
-该包已上传至maven中央仓库，可在pom中直接声明引用
 
-以版本agile-validate-2.0.9.jar为例。
+您可以从[最新稳定版本]下载包(https://github.com/mydeathtrial/agile-validate/releases). 该包已上传至maven中央仓库，可在pom中直接声明引用
+
+以版本agile-validate-2.0.10.jar为例。
+
 #### 步骤 2: 添加maven依赖
+
 ```xml
 <!--声明中央仓库-->
 <repositories>
@@ -36,60 +43,70 @@
         <url>https://repo1.maven.org/maven2/</url>
     </repository>
 </repositories>
-<!--声明依赖-->
+        <!--声明依赖-->
 <dependency>
-    <groupId>cloud.agileframework</groupId>
-    <artifactId>agile-validate</artifactId>
-    <version>2.0.9</version>
+<groupId>cloud.agileframework</groupId>
+<artifactId>agile-validate</artifactId>
+<version>2.0.10</version>
 </dependency>
 ```
+
 #### 步骤 3: 开箱即用
 
 ##### 注解
+
 用于要进行参数验证的方法，声明参数验证规则
+
 ```
 1、com.agile.common.annotation.Validate，支持多注解
 2、com.agile.common.annotation.Validates，可包含多Validate
 ```
+
 例子：
+
 ```java
     @Validate(value = "param1", validateType = ValidateType.EMAIL)
-    @Validate(value = "param1", validateRegex = "[\\d]+",validateMsg = "必须是数字")
-    @Validate(value = "param2", nullable = false, validateMsgKey = "messageKey", validateMsgParams = "cu")
-    @Validate(value = "params.param1.param2", nullable = false, validateMsg = "自定义错误")
-    @Validate(value = "param3", beanClass = Ob.class, validateGroups = {Group1.class})
-    @Validate(value = "a",customBusiness = {CustomValidate.class})
-    public void yourMethod(...) {
+@Validate(value = "param1", validateRegex = "[\\d]+", validateMsg = "必须是数字")
+@Validate(value = "param2", nullable = false, validateMsgKey = "messageKey", validateMsgParams = "cu")
+@Validate(value = "params.param1.param2", nullable = false, validateMsg = "自定义错误")
+@Validate(value = "param3", beanClass = Ob.class, validateGroups = {Group1.class})
+@Validate(value = "a", customBusiness = {CustomValidate.class})
+public void yourMethod(...){
         ...
-    }
+        }
 
-    //获取参数校验结果
-    List<ValidateMsg> result = ValidateUtil.handleInParamValidate(getMethod("yourMethod"), param);
+        //获取参数校验结果
+        List<ValidateMsg> result=ValidateUtil.handleInParamValidate(getMethod("yourMethod"),param);
 
-    //验证结果聚合，同一个参数如果经过多个验证环节，可能产生多种错误，该方法可将同参数验证结果进行聚合
-    List<ValidateMsg> result = ValidateUtil.aggregation(result);
+        //验证结果聚合，同一个参数如果经过多个验证环节，可能产生多种错误，该方法可将同参数验证结果进行聚合
+        List<ValidateMsg> result=ValidateUtil.aggregation(result);
 ```
+
 ##### 调用
+
 获取验证结果，工具类cloud.agileframework.validate.ValidateUtil
+
 ```java
     /**
-     * 方法入参验证
-     *
-     * @param method 方法
-     * @param params 参数集
-     * @return 验证信息集，包含正确与错误的所有入参验证结果，包括参数名、参数值、错误信息
-     */
-    public static List<ValidateMsg> handleInParamValidate(Method method,Object params) 
+ * 方法入参验证
+ *
+ * @param method 方法
+ * @param params 参数集
+ * @return 验证信息集，包含正确与错误的所有入参验证结果，包括参数名、参数值、错误信息
+ */
+public static List<ValidateMsg> handleInParamValidate(Method method,Object params)
 
-    /**
-     * 参数校验信息根据相同参数聚合错误信息
-     *
-     * @param list 聚合之前的错误信息
-     * @return 聚合后的信息，过滤掉正确参数，重复的参数验证结果合并为一个，对应的错误消息合并
-     */
-    public static List<ValidateMsg> aggregation(List<ValidateMsg> list) 
+/**
+ * 参数校验信息根据相同参数聚合错误信息
+ *
+ * @param list 聚合之前的错误信息
+ * @return 聚合后的信息，过滤掉正确参数，重复的参数验证结果合并为一个，对应的错误消息合并
+ */
+public static List<ValidateMsg> aggregation(List<ValidateMsg> list) 
 ```
+
 注解参数说明：
+
 ```java
 public @interface Validate {
     /**
@@ -172,35 +189,37 @@ public @interface Validate {
 ```
 
 验证结果（例）
+
 ```json
 [
-	{
-		"item":"param1",
-		"itemValue":"a",
-		"message":"不符合邮箱格式;必须是数字",
-		"state":false
-	},
-	{
-		"item":"param3",
-		"itemValue":"b1",
-		"message":"错了吧",
-		"state":false
-	},
-	{
-		"item":"params.param1.param2",
-		"message":"自定义错误",
-		"state":false
-	},
-	{
-		"item":"param2",
-		"message":"errorcu",
-		"state":false
-	}
+  {
+    "item": "param1",
+    "itemValue": "a",
+    "message": "不符合邮箱格式;必须是数字",
+    "state": false
+  },
+  {
+    "item": "param3",
+    "itemValue": "b1",
+    "message": "错了吧",
+    "state": false
+  },
+  {
+    "item": "params.param1.param2",
+    "message": "自定义错误",
+    "state": false
+  },
+  {
+    "item": "param2",
+    "message": "errorcu",
+    "state": false
+  }
 ]
 
 ```
 
 ##### 自定义业务代码验证
+
 ```java
     //使用注解中的customBusiness属性，声明要使用的"业务验证类"，"业务验证类"必须实现ValidateCustomBusiness接口
     //该属性支持声明多个"业务验证类"，验证组件调用"业务验证类"的validate方法时，会有限尝试使用spring托管的bean去调用

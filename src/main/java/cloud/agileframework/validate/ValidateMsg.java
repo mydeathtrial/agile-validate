@@ -8,13 +8,11 @@ import lombok.Data;
 @Data
 public class ValidateMsg {
     private String message;
-    private boolean state = true;
     private String item;
     private Object itemValue;
 
-    public ValidateMsg(String msg, boolean state, String paramKey, Object paramValue) {
+    public ValidateMsg(String msg, String paramKey, Object paramValue) {
         this.message = msg;
-        this.state = state;
         this.item = paramKey;
         this.itemValue = paramValue;
     }
@@ -25,10 +23,6 @@ public class ValidateMsg {
     }
 
     public ValidateMsg() {
-    }
-
-    public boolean isState() {
-        return state;
     }
 
     public void addMessage(String msg) {
