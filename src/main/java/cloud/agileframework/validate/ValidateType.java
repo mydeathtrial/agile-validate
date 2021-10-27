@@ -139,7 +139,7 @@ public enum ValidateType implements ValidateInterface {
                 && validateRegex(key, value, validate, list)
                 && validateRange(key, value, validate, list)
                 && validateSize(key, value, validate, list)) {
-            validateCustomBusiness(value, validate, list);
+            validateCustomBusiness(key, value, validate, list);
         }
 
         return list;
@@ -289,7 +289,7 @@ public enum ValidateType implements ValidateInterface {
      * @param validate 注解
      * @param list     异常信息容器
      */
-    private boolean validateCustomBusiness(Object value, Validate validate, List<ValidateMsg> list) {
+    private boolean validateCustomBusiness(String key, Object value, Validate validate, List<ValidateMsg> list) {
         if (validate.customBusiness().length == 0) {
             return true;
         }
@@ -306,7 +306,7 @@ public enum ValidateType implements ValidateInterface {
                     return new ArrayList<ValidateMsg>(0);
                 }
             }
-            List<ValidateMsg> vr = bean.validate(value);
+            List<ValidateMsg> vr = bean.validate(key, value);
             if (vr == null) {
                 return new ArrayList<ValidateMsg>(0);
             }

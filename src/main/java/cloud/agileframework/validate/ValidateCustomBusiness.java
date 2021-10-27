@@ -16,5 +16,5 @@ public interface ValidateCustomBusiness {
      * @param params 参数
      * @return 验证结果信息
      */
-    List<ValidateMsg> validate(Object params);
+    List<ValidateMsg> validate(String key, Object params);
 }
