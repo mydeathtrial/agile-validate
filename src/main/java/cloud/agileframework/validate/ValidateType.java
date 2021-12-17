@@ -159,7 +159,7 @@ public enum ValidateType implements ValidateInterface {
         }
         //可以空，并且确实空的时候短路处理
         if (validate.nullable()) {
-            return false;
+            return true;
         }
         ValidateMsg v = new ValidateMsg(key, null);
         v.setMessage(createMessage(validate, "不允许为空值"));
@@ -326,7 +326,7 @@ public enum ValidateType implements ValidateInterface {
      */
     private boolean validateBeanClass(String key, Object value, Validate validate, List<ValidateMsg> list) {
         Class<?> beanClass = validate.beanClass();
-        if (value == null || beanClass == Class.class) {
+        if (beanClass == Class.class) {
             return true;
         }
         Object bean = ObjectUtil.to(value, new TypeReference<>(beanClass));
