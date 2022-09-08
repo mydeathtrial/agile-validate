@@ -16,10 +16,7 @@ import java.util.List;
 public class CustomValidate implements ValidateCustomBusiness {
     @Override
     public List<ValidateMsg> validate(String key, Object params) {
-        ValidateMsg validateMsg = new ValidateMsg();
-        validateMsg.setItem(key);
-        validateMsg.setItemValue("tu");
-        validateMsg.setMessage("aaaa");
+        ValidateMsg validateMsg = new ValidateMsg("aaaa",key,"tu");
         return Collections.singletonList(validateMsg);
     }
 }
