@@ -28,6 +28,10 @@ import java.util.stream.Stream;
  * @since 1.0
  */
 public class ValidateUtil {
+
+    public static final ValidatorFactory VALIDATOR_FACTORY = Validation.buildDefaultValidatorFactory();
+    public static final Validator VALIDATOR = VALIDATOR_FACTORY.getValidator();
+
     private ValidateUtil() {
     }
 
@@ -119,9 +123,7 @@ public class ValidateUtil {
         if (pojo == null) {
             return list;
         }
-        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
-        Validator validator = validatorFactory.getValidator();
-        Set<ConstraintViolation<Object>> set = validator.validate(pojo, groups);
+        Set<ConstraintViolation<Object>> set = VALIDATOR.validate(pojo, groups);
 
         if (set == null || set.isEmpty()) {
             return list;
