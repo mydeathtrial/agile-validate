@@ -2,6 +2,7 @@ package cloud.agileframework.validate;
 
 import cloud.agileframework.validate.annotation.Validate;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -26,5 +27,5 @@ public interface ValidateInterface {
      * @param validate 验证注解
      * @return 验证结果
      */
-    List<ValidateMsg> validateArray(String key, List<Object> value, Validate validate);
+    List<ValidateMsg> validateArray(String key, Collection<?> value, Validate validate);
 }

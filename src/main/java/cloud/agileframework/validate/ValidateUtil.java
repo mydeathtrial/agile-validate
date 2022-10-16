@@ -13,6 +13,7 @@ import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -63,10 +64,8 @@ public class ValidateUtil {
      * @return 验证信息集
      */
     private static List<ValidateMsg> handleValidateAnnotation(Validate v, Object params) {
-        List<ValidateMsg> list = new ArrayList<>();
-
         if (v == null) {
-            return list;
+            return Lists.newArrayList();
         }
 
         String key = v.value().trim();
@@ -78,12 +77,11 @@ public class ValidateUtil {
         }
 
         ValidateType validateType = v.validateType();
-        if (value != null && List.class.isAssignableFrom(value.getClass())) {
-            list.addAll(validateType.validateArray(key, (List) value, v));
+        if (value != null && Collection.class.isAssignableFrom(value.getClass())) {
+            return validateType.validateArray(key, (Collection<?>) value, v);
         } else {
-            list.addAll(validateType.validateParam(key, value, v));
+            return validateType.validateParam(key, value, v);
         }
-        return list;
     }
 
     /**
@@ -118,16 +116,15 @@ public class ValidateUtil {
      * @return 验证结果
      */
     public static List<ValidateMsg> validate(Object pojo, Class<?>... groups) {
-        List<ValidateMsg> list = new ArrayList<>();
-
         if (pojo == null) {
-            return list;
+            return Lists.newArrayList();
         }
         Set<ConstraintViolation<Object>> set = VALIDATOR.validate(pojo, groups);
 
         if (set == null || set.isEmpty()) {
-            return list;
+            return Lists.newArrayList();
         }
+        List<ValidateMsg> list = Lists.newArrayList();
         for (ConstraintViolation<Object> m : set) {
             ValidateMsg r = new ValidateMsg(m.getMessage(), m.getPropertyPath().toString(), m.getInvalidValue());
             list.add(r);

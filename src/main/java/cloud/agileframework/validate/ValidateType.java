@@ -97,11 +97,11 @@ public enum ValidateType implements ValidateInterface {
 
     @Override
     @NotNull
-    public List<ValidateMsg> validateArray(String key, List<Object> value, Validate validate) {
+    public List<ValidateMsg> validateArray(String key, Collection<?> value, Validate validate) {
         List<ValidateMsg> list = new ArrayList<>();
-        for (int i = 0; i < value.size(); i++) {
-            Object node = value.get(i);
-            List<ValidateMsg> vs = validate(String.format("%s.%s", key, i), node, validate);
+        int i = 0;
+        for (Object node:value) {
+            List<ValidateMsg> vs = validate(String.format("%s.%s", key, i++), node, validate);
             if (ObjectUtils.isEmpty(vs)) {
                 continue;
             }
@@ -335,8 +335,7 @@ public enum ValidateType implements ValidateInterface {
             ObjectUtil.setAllFieldNull(bean);
         }
         if (bean != null) {
-            ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
-            Validator validator = validatorFactory.getValidator();
+            Validator validator = ValidateUtil.VALIDATOR;
             Set<ConstraintViolation<Object>> set = validator.validate(bean, validate.validateGroups());
             for (ConstraintViolation<Object> m : set) {
                 ValidateMsg r = new ValidateMsg(m.getMessage(), StringUtils.isBlank(key) ? m.getPropertyPath().toString() : String.format("%s.%s", key, m.getPropertyPath()), m.getInvalidValue());
