@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 /**
  * @author 佟盟 on 2018/11/16
  */
-public enum ValidateType implements ValidateInterface {
+public enum ValidateType {
     /**
      * 正则校验类型
      */
@@ -89,15 +89,13 @@ public enum ValidateType implements ValidateInterface {
         this.info = info;
     }
 
-    @Override
     @NotNull
-    public List<ValidateMsg> validateParam(String key, Object value, Validate validate) {
+    public static List<ValidateMsg> validateParam(String key, Object value, ValidateConfig validate) {
         return validate(key, value, validate);
     }
 
-    @Override
     @NotNull
-    public List<ValidateMsg> validateArray(String key, Collection<?> value, Validate validate) {
+    public static List<ValidateMsg> validateArray(String key, Collection<?> value, ValidateConfig validate) {
         List<ValidateMsg> list = new ArrayList<>();
         int i = 0;
         for (Object node:value) {
@@ -109,28 +107,28 @@ public enum ValidateType implements ValidateInterface {
         }
 
         int size = value.size();
-        if (!(validate.minSize() <= size && size <= validate.maxSize())) {
+        if (!(validate.getMinSize() <= size && size <= validate.getMaxSize())) {
             ValidateMsg v = new ValidateMsg(createMessage(validate, "长度超出阈值"), key, value);
             list.add(v);
         }
         return list;
     }
 
-    private String createMessage(Validate validate, String defaultMessage) {
+    private static String createMessage(ValidateConfig validate, String defaultMessage) {
         String result;
-        if (StringUtils.isBlank(validate.validateMsg()) && StringUtils.isBlank(validate.validateMsgKey()) && defaultMessage == null) {
-            result = String.format("不符合%s格式", info == null ? "自定义" : info);
-        } else if (!StringUtils.isBlank(validate.validateMsg())) {
-            result = validate.validateMsg();
-        } else if (!StringUtils.isBlank(validate.validateMsgKey())) {
-            result = MessageUtil.message(validate.validateMsgKey(), null, (Object[]) validate.validateMsgParams());
+        if (StringUtils.isBlank(validate.getValidateMsg()) && StringUtils.isBlank(validate.getValidateMsgKey()) && defaultMessage == null) {
+            result = String.format("不符合%s格式", validate.getValidateMsg() == null ? "自定义" : validate.getValidateMsg());
+        } else if (!StringUtils.isBlank(validate.getValidateMsg())) {
+            result = validate.getValidateMsg();
+        } else if (!StringUtils.isBlank(validate.getValidateMsgKey())) {
+            result = MessageUtil.message(validate.getValidateMsgKey(), null, validate.getValidateMsgParams());
         } else {
             result = defaultMessage;
         }
         return result;
     }
 
-    private List<ValidateMsg> validate(String key, Object value, Validate validate) {
+    private static List<ValidateMsg> validate(String key, Object value, ValidateConfig validate) {
         List<ValidateMsg> list = new ArrayList<>();
 
         if (validateNullable(key, value, validate, list)
@@ -152,13 +150,13 @@ public enum ValidateType implements ValidateInterface {
      * @param value    值
      * @param validate 注解
      */
-    private boolean validateNullable(String key, Object value, Validate validate, List<ValidateMsg> list) {
+    private static boolean validateNullable(String key, Object value, ValidateConfig validate, List<ValidateMsg> list) {
         //不为空不进行拦截
         if (value != null) {
             return true;
         }
         //可以空，并且确实空的时候短路处理
-        if (validate.nullable()) {
+        if (validate.isNullable()) {
             return true;
         }
         ValidateMsg v = new ValidateMsg(key, null);
@@ -175,12 +173,12 @@ public enum ValidateType implements ValidateInterface {
      * @param validate 注解
      * @param list     异常信息容器
      */
-    private boolean validateSize(String key, Object value, Validate validate, List<ValidateMsg> list) {
+    private static boolean validateSize(String key, Object value, ValidateConfig validate, List<ValidateMsg> list) {
         if (value == null) {
             return true;
         }
         int size = String.valueOf(value).length();
-        if (validate.minSize() <= size && size <= validate.maxSize()) {
+        if (validate.getMinSize() <= size && size <= validate.getMaxSize()) {
             return true;
         }
 
@@ -199,16 +197,16 @@ public enum ValidateType implements ValidateInterface {
      * @param validate 注解
      * @param list     异常信息容器
      */
-    private boolean validateRegex(String key, Object value, Validate validate, List<ValidateMsg> list) {
+    private static boolean validateRegex(String key, Object value, ValidateConfig validate, List<ValidateMsg> list) {
         if (value == null) {
             return true;
         }
         boolean result = true;
         final String text = String.valueOf(value);
-        if (validate.validateType() != NO && !PatternUtil.matches(regex, text)) {
+        if (validate.getValidateType() != NO && !PatternUtil.matches(validate.getValidateRegex(), text)) {
             result = false;
         }
-        if (!StringUtils.isEmpty(validate.validateRegex()) && !PatternUtil.matches(validate.validateRegex(), text)) {
+        if (!StringUtils.isEmpty(validate.getValidateRegex()) && !PatternUtil.matches(validate.getValidateRegex(), text)) {
             result = false;
         }
 
@@ -232,11 +230,11 @@ public enum ValidateType implements ValidateInterface {
      * @param list     验证结果
      * @return 是否继续
      */
-    private boolean validateRange(String key, Object value, Validate validate, List<ValidateMsg> list) {
+    private static boolean validateRange(String key, Object value, ValidateConfig validate, List<ValidateMsg> list) {
         if (value == null) {
             return true;
         }
-        if (validate.min() == Integer.MIN_VALUE && validate.max() == Double.MAX_VALUE) {
+        if (validate.getMin() == Integer.MIN_VALUE && validate.getMax() == Double.MAX_VALUE) {
             return true;
         }
         final String string = value.toString();
@@ -248,7 +246,7 @@ public enum ValidateType implements ValidateInterface {
             return false;
         } else {
             Number n = NumberUtils.createNumber(string);
-            if (validate.min() > n.doubleValue() || n.doubleValue() > validate.max()) {
+            if (validate.getMin() > n.doubleValue() || n.doubleValue() > validate.getMax()) {
                 ValidateMsg v = new ValidateMsg(key, value);
 
                 v.setMessage(createMessage(validate, "大小超出阈值"));
@@ -268,7 +266,7 @@ public enum ValidateType implements ValidateInterface {
      * @param validate 注解
      * @param list     异常信息容器
      */
-    private boolean validateIsBlank(String key, Object value, Validate validate, List<ValidateMsg> list) {
+    private static boolean validateIsBlank(String key, Object value, ValidateConfig validate, List<ValidateMsg> list) {
         // 验证空字符串
         if (value == null || !StringUtils.isBlank(value.toString())) {
             return true;
@@ -289,11 +287,12 @@ public enum ValidateType implements ValidateInterface {
      * @param validate 注解
      * @param list     异常信息容器
      */
-    private boolean validateCustomBusiness(String key, Object value, Validate validate, List<ValidateMsg> list) {
-        if (validate.customBusiness().length == 0) {
+    private static boolean validateCustomBusiness(String key, Object value, ValidateConfig validate, List<ValidateMsg> list) {
+        Class<? extends ValidateCustomBusiness>[] customBusiness = validate.getCustomBusiness();
+        if (customBusiness ==null || customBusiness.length == 0) {
             return true;
         }
-        Set<ValidateMsg> set = Arrays.stream(validate.customBusiness()).map(custom -> {
+        Set<ValidateMsg> set = Arrays.stream(customBusiness).map(custom -> {
             ValidateCustomBusiness bean = BeanUtil.getBean(custom);
             if (bean == null) {
                 bean = ClassUtil.newInstance(custom);
@@ -324,9 +323,9 @@ public enum ValidateType implements ValidateInterface {
      * @param validate 注解
      * @param list     错误信息容器
      */
-    private boolean validateBeanClass(String key, Object value, Validate validate, List<ValidateMsg> list) {
-        Class<?> beanClass = validate.beanClass();
-        if (beanClass == Class.class) {
+    private static boolean validateBeanClass(String key, Object value, ValidateConfig validate, List<ValidateMsg> list) {
+        Class<?> beanClass = validate.getBeanClass();
+        if (beanClass==null || beanClass == Class.class) {
             return true;
         }
         Object bean = ObjectUtil.to(value, new TypeReference<>(beanClass));
@@ -336,7 +335,7 @@ public enum ValidateType implements ValidateInterface {
         }
         if (bean != null) {
             Validator validator = ValidateUtil.VALIDATOR;
-            Set<ConstraintViolation<Object>> set = validator.validate(bean, validate.validateGroups());
+            Set<ConstraintViolation<Object>> set = validator.validate(bean, validate.getValidateGroups());
             for (ConstraintViolation<Object> m : set) {
                 ValidateMsg r = new ValidateMsg(m.getMessage(), StringUtils.isBlank(key) ? m.getPropertyPath().toString() : String.format("%s.%s", key, m.getPropertyPath()), m.getInvalidValue());
                 list.add(r);

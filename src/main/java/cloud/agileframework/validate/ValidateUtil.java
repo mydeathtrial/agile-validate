@@ -47,11 +47,31 @@ public class ValidateUtil {
         Optional<Validates> validatesOptional = Optional.ofNullable(method.getAnnotation(Validates.class));
         Optional<Validate> validateOptional = Optional.ofNullable(method.getAnnotation(Validate.class));
 
-        List<Validate> validateList = Lists.newArrayList();
-        validatesOptional.ifPresent(validates -> validateList.addAll(Stream.of(validates.value()).collect(Collectors.toList())));
-        validateOptional.ifPresent(validateList::add);
+        List<ValidateConfig> validateList = Lists.newArrayList();
+        validatesOptional.ifPresent(validates -> validateList.addAll(Stream.of(validates.value()).map(ValidateConfig::new).collect(Collectors.toList())));
+        validateOptional.ifPresent(validate -> validateList.add(new ValidateConfig(validate)));
 
-        return validateList.stream().map(validate -> handleValidateAnnotation(validate, params)).reduce((all, validateMsgList) -> {
+        return handleValidateData(params, validateList);
+    }
+
+    /**
+     * 根据validateList校验规则校验数据data
+     *
+     * @param data         准备校验的数据
+     * @param validateList 校验规则
+     * @return 校验结果
+     */
+    public static List<ValidateMsg> handleValidateData(Object data, List<ValidateConfig> validateList) {
+        return validateList.stream().map(validateConfig -> {
+            String key = validateConfig.getValue().trim();
+            Object value;
+            if (StringUtils.isBlank(key)) {
+                value = data;
+            } else {
+                value = JSONUtil.pathGet(key, data);
+            }
+            return handleValidate(value, validateConfig);
+        }).reduce((all, validateMsgList) -> {
             all.addAll(validateMsgList);
             return all;
         }).orElse(Lists.newArrayList());
@@ -63,24 +83,16 @@ public class ValidateUtil {
      * @param v Validate注解
      * @return 验证信息集
      */
-    private static List<ValidateMsg> handleValidateAnnotation(Validate v, Object params) {
+    private static List<ValidateMsg> handleValidate(Object value, ValidateConfig v) {
         if (v == null) {
             return Lists.newArrayList();
         }
 
-        String key = v.value().trim();
-        Object value;
-        if (StringUtils.isBlank(key)) {
-            value = params;
-        } else {
-            value = JSONUtil.pathGet(key, params);
-        }
-
-        ValidateType validateType = v.validateType();
+        String key = v.getValue().trim();
         if (value != null && Collection.class.isAssignableFrom(value.getClass())) {
-            return validateType.validateArray(key, (Collection<?>) value, v);
+            return ValidateType.validateArray(key, (Collection<?>) value, v);
         } else {
-            return validateType.validateParam(key, value, v);
+            return ValidateType.validateParam(key, value, v);
         }
     }
 
